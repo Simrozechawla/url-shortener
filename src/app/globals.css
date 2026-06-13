@@ -1,26 +1,61 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-ink: #15171c;
+  --color-ink-soft: #1c1f27;
+  --color-paper: #faf7f0;
+  --color-stamp: #ff5a36;
+  --color-line: #2a2e38;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html,
+body {
+  background: var(--color-ink);
+  color: var(--color-paper);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Ticket perforation */
+.tear {
+  border-left: 2px dashed rgba(21, 23, 28, 0.18);
+}
+
+.tear-notch {
+  position: absolute;
+  left: -9px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-ink);
+}
+
+.tear-notch--top {
+  top: -9px;
+}
+
+.tear-notch--bottom {
+  bottom: -9px;
+}
+
+/* Ticket entrance animation */
+@keyframes ticket-in {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.ticket-enter {
+  animation: ticket-in 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticket-enter {
+    animation: none;
+  }
 }
