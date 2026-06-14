@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎫 Link Desk — URL Shortener
 
-## Getting Started
+A full-stack URL shortener with a custom "claim ticket" design — paste a long URL, get back a short one styled like a perforated ticket stub.
 
-First, run the development server:
+**🔗 Live demo:** [url-shortener-xi-roan-55.vercel.app](https://url-shortener-xi-roan-55.vercel.app)
 
-```bash
+![Link Desk screenshot](./screenshot.png)
+
+## ✨ Features
+
+- Shorten any valid URL into a compact, shareable link
+- Custom design system — dark "ticket counter" theme with perforated edges and a vermillion accent
+- Redis-cached redirects (301) for fast lookups, with PostgreSQL as the source of truth
+- Click tracking on every short link
+- Optional expiry dates and custom slugs (API-level support)
+- One-click copy to clipboard
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 |
+| ORM | Prisma 7 (driver adapters) |
+| Database | PostgreSQL (Neon in production, Docker locally) |
+| Cache | Redis / ioredis (Upstash in production, Docker locally) |
+| Deployment | Vercel |
+
+## 🏗 How It Works
+
+1. `POST /api/shorten` — validates the URL, generates a short slug (via `nanoid`), stores it in Postgres, and caches it in Redis for 24h.
+2. `GET /:slug` — checks Redis first (fast path); on a cache miss, falls back to Postgres, re-caches, and increments the click counter. Returns a `301` redirect to the original URL.
+
+## 🚀 Getting Started (Local Development)
+
+### Prerequisites
+- Node.js 18+
+- Docker Desktop
+
+### Setup
+
+\`\`\`bash
+git clone https://github.com/Simrozechawla/url-shortener.git
+cd url-shortener
+npm install
+\`\`\`
+
+Create \`.env\` and \`.env.local\` in the project root:
+
+\`\`\`env
+# .env (used by Prisma)
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/urlshortener?schema=public"
+
+# .env.local (used by Next.js)
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/urlshortener?schema=public"
+REDIS_URL="redis://localhost:6379"
+NEXT_PUBLIC_BASE_URL="http://localhost:3000"
+\`\`\`
+
+Start Postgres + Redis, run migrations, and start the dev server:
+
+\`\`\`bash
+docker compose up -d
+npx prisma migrate dev
+npx prisma generate
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+\`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit \`http://localhost:3000\`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📡 API Reference
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Create a short link
+\`\`\`
+POST /api/shorten
+Content-Type: application/json
 
-## Learn More
+{
+  "url": "https://example.com/some/very/long/path",
+  "customSlug": "optional-custom-slug"
+}
+\`\`\`
 
-To learn more about Next.js, take a look at the following resources:
+**Response**
+\`\`\`json
+{
+  "shortUrl": "https://your-domain.com/aB3xY9",
+  "slug": "aB3xY9",
+  "originalUrl": "https://example.com/some/very/long/path",
+  "createdAt": "2026-06-12T11:56:17.768Z"
+}
+\`\`\`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Redirect
+\`\`\`
+GET /:slug → 301 redirect to original URL
+\`\`\`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Project Structure
 
-## Deploy on Vercel
+\`\`\`
+src/
+├── app/
+│   ├── api/shorten/route.ts   # POST endpoint to create short links
+│   ├── [slug]/route.ts        # GET endpoint, redirects + click tracking
+│   ├── page.tsx                # Frontend UI
+│   └── globals.css             # Theme, perforation effects, animations
+├── lib/
+│   ├── prisma.ts                # Prisma client (singleton, driver adapter)
+│   └── redis.ts                 # Redis client
+prisma/
+└── schema.prisma                # Link model: slug, originalUrl, clicks, expiresAt
+\`\`\`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🗺 Roadmap
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [ ] Custom slug input on the frontend
+- [ ] Click analytics dashboard
+- [ ] QR code generation per link
+- [ ] Link expiry UI
+
+## 👤 Author
+
+**Simroze Chawla**
+[GitHub](https://github.com/Simrozechawla) · [LinkedIn](https://linkedin.com/in/simroze-chawla-78ab47271)
