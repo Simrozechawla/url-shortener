@@ -97,21 +97,6 @@ Content-Type: application/json
 GET /:slug → 301 redirect to original URL
 \`\`\`
 
-## 📁 Project Structure
-
-\`\`\`
-src/
-├── app/
-│   ├── api/shorten/route.ts   # POST endpoint to create short links
-│   ├── [slug]/route.ts        # GET endpoint, redirects + click tracking
-│   ├── page.tsx                # Frontend UI
-│   └── globals.css             # Theme, perforation effects, animations
-├── lib/
-│   ├── prisma.ts                # Prisma client (singleton, driver adapter)
-│   └── redis.ts                 # Redis client
-prisma/
-└── schema.prisma                # Link model: slug, originalUrl, clicks, expiresAt
-\`\`\`
 
 ## 🗺 Roadmap
 
